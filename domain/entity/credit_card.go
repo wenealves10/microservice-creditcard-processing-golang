@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type CardCredit struct {
+type CreditCard struct {
 	Number          string
 	Name            string
 	ExpirationMonth uint8
@@ -14,8 +14,8 @@ type CardCredit struct {
 	Cvv             string
 }
 
-func NewCardCredit(number string, name string, expirationMonth uint8, expirationYear int, cvv string) (*CardCredit, error) {
-	card := &CardCredit{
+func NewCreditCard(number string, name string, expirationMonth uint8, expirationYear int, cvv string) (*CreditCard, error) {
+	card := &CreditCard{
 		Number:          number,
 		Name:            name,
 		ExpirationMonth: expirationMonth,
@@ -32,7 +32,7 @@ func NewCardCredit(number string, name string, expirationMonth uint8, expiration
 	return card, nil
 }
 
-func (card *CardCredit) IsValid() error {
+func (card *CreditCard) IsValid() error {
 	err := card.isNumberValid()
 
 	if err != nil {
@@ -51,10 +51,16 @@ func (card *CardCredit) IsValid() error {
 		return err
 	}
 
+	err = card.IsCvvValid()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (card *CardCredit) isNumberValid() error {
+func (card *CreditCard) isNumberValid() error {
 	// validate credit card number
 	re := regexp.MustCompile(`^((5(([1-2]|[4-5])[0-9]{8}|0((1|6)([0-9]{7}))|3(0(4((0|[2-9])[0-9]{5})|([0-3]|[5-9])[0-9]{6})|[1-9][0-9]{7})))|((508116)\\d{4,10})|((502121)\\d{4,10})|((589916)\\d{4,10})|(2[0-9]{15})|(67[0-9]{14})|(506387)\\d{4,10})`)
 
@@ -65,7 +71,7 @@ func (card *CardCredit) isNumberValid() error {
 	return nil
 }
 
-func (card *CardCredit) isMonthValid() error {
+func (card *CreditCard) isMonthValid() error {
 	// validate expiration month
 	if card.ExpirationMonth < 1 || card.ExpirationMonth > 12 {
 		return errors.New("invalid expiration month")
@@ -74,10 +80,21 @@ func (card *CardCredit) isMonthValid() error {
 	return nil
 }
 
-func (card *CardCredit) isYearValid() error {
+func (card *CreditCard) isYearValid() error {
 	if card.ExpirationYear >= time.Now().Year() {
 		return nil
 	}
 
 	return errors.New("invalid expiration year")
+}
+
+func (card *CreditCard) IsCvvValid() error {
+	// validate cvv
+	re := regexp.MustCompile(`^[0-9]{3,4}$`)
+
+	if !re.MatchString(card.Cvv) {
+		return errors.New("invalid cvv")
+	}
+
+	return nil
 }
